@@ -4,14 +4,15 @@ import pdfplumber
 import os
 import pandas as pd
 from fpdf import FPDF
+import json
 
 # Configurar la API de OpenAI
 if not os.path.exists("chatgpt-api-key.txt"):
     openai.api_key = "sk-..."
-    print("API key is missing! Please add your OpenAI API key to a file"
+    print("API key is missing! Please add your OpenAI API key to a file")
 else:
     file = open("chatgpt-api-key.txt", "r")
-    openai.api_key = file.read()
+    openai.api_key = os.environ.get("OPENAI_API_KEY") or file.read().strip()
     file.close()
 
 app = Flask(__name__)
@@ -31,25 +32,50 @@ def extract_text_from_pdf(pdf_path):
 # Función para analizar el CV con ChatGPT
 def analyze_cv(text):
     prompt = f"""
-    Analiza el siguiente CV y proporciona un resumen con:
-    - Perfil profesional
-    - Career path recomendado
-    - Habilidades clave a potenciar
-    - Indicador MBTI aproximado
-    - Puestos recomendados y habilidades clave
-    - Evaluación general y puntaje del CV del 1 al 100
-    - Industria recomendada basada en la experiencia
-    - Lista de habilidades clave extraídas del CV
+    Analiza el siguiente CV y proporciona un resumen en formato JSON con las siguientes claves:
+    {{
+        "perfil": "Resumen del perfil profesional",
+        "career_path": "Camino de carrera recomendado",
+        "habilidades": "Lista de habilidades clave a potenciar",
+        "mbti": "Indicador MBTI aproximado",
+        "puestos_recomendados": "Lista de puestos recomendados",
+        "evaluacion": {{
+            "puntaje": "Puntaje del CV entre 1 y 100",
+            "comentarios": "Comentarios sobre la calidad del CV"
+        }},
+        "industria_recomendada": "Industria sugerida basada en la experiencia",
+        "habilidades_clave": "Lista de habilidades clave extraídas del CV"
+    }}
+
+    Asegúrate de que la respuesta sea un JSON válido sin texto adicional ni comentarios adicionales.
     
     CV:
     {text}
     """
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[{"role": "system", "content": "Eres un experto en análisis de CV."},
-                  {"role": "user", "content": prompt}]
-    )
-    return response["choices"][0]["message"]["content"]
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "system", "content": "Eres un experto en análisis de CV. Devuelve solo JSON válido."},
+                    {"role": "user", "content": prompt}]
+        )
+    except:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "system", "content": "Eres un experto en análisis de CV. Devuelve solo JSON válido."},
+                    {"role": "user", "content": prompt}]
+        )
+    
+    raw_response = response["choices"][0]["message"]["content"]
+    print("🔹 Respuesta de OpenAI:", raw_response)  # 🔍 Debugging
+
+    try:
+        analysis_json = json.loads(raw_response)
+        return analysis_json
+    except json.JSONDecodeError:
+        print("❌ Error: La respuesta de OpenAI no es un JSON válido.")
+        return None
+
+
 
 # Función para generar PDF con el análisis
 def generate_pdf(cv_name, analysis):
@@ -81,15 +107,31 @@ def analyze():
         file.save(filename)
         text = extract_text_from_pdf(filename)
         analysis = analyze_cv(text)
-        pdf_path = generate_pdf(file.filename, analysis)
-        score = int(analysis.split("Puntaje del CV:")[1].split("/100")[0])  # Extraer puntaje
-        industry = analysis.split("Industria recomendada:")[1].split("\n")[0] if "Industria recomendada:" in analysis else "No especificado"
-        skills = analysis.split("Lista de habilidades clave:")[1].split("\n")[0] if "Lista de habilidades clave:" in analysis else "No especificado"
+
+        if analysis is None:
+            print("❌ Análisis fallido para:", file.filename)
+            continue  # Si el análisis falló, pasa al siguiente archivo
+        else:
+            print("✅ Análisis exitoso para:", file.filename)
+            print("🔹 Análisis:", analysis)  # 🔍 Debugging
+
+        pdf_path = generate_pdf(file.filename, json.dumps(analysis, indent=4))  # Guardamos el JSON en el PDF
+
+        # Extraer valores del JSON
+        score = analysis.get("evaluacion", {}).get("puntaje", "No especificado")
+        industry = analysis.get("industria_recomendada", "No especificado")
+        skills = analysis.get("habilidades_clave", "No especificado")
+
         rankings.append({"Nombre": file.filename, "Puntaje": score, "Industria": industry, "Habilidades": skills, "PDF": pdf_path})
-    
-    rankings_df = pd.DataFrame(rankings).sort_values(by="Puntaje", ascending=False)
-    rankings_df.to_csv(os.path.join(RESULTS_FOLDER, "cv_ranking.csv"), index=False)
-    
+
+    print("🔹 Rankings antes de DataFrame:", rankings)
+
+    if rankings:
+        rankings_df = pd.DataFrame(rankings).sort_values(by="Puntaje", ascending=False)
+        rankings_df.to_csv(os.path.join(RESULTS_FOLDER, "cv_ranking.csv"), index=False)
+    else:
+        rankings_df = None
+
     return render_template("results.html", rankings=rankings)
 
 # Ruta para descargar los PDF
