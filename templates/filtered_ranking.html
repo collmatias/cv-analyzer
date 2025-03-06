@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtrar Ranking de CVs</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <h1 class="text-center">Filtrar Ranking de CVs</h1>
+    <form method="get" action="/filtered_ranking" class="mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="min_score" class="form-label">Puntaje mínimo</label>
+                <input type="number" name="min_score" id="min_score" class="form-control" value="0" min="0" max="100">
+            </div>
+            <div class="col-md-3">
+                <label for="max_score" class="form-label">Puntaje máximo</label>
+                <input type="number" name="max_score" id="max_score" class="form-control" value="100" min="0" max="100">
+            </div>
+            <div class="col-md-3">
+                <label for="industry" class="form-label">Industria</label>
+                <input type="text" name="industry" id="industry" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label for="skills" class="form-label">Habilidades</label>
+                <input type="text" name="skills" id="skills" class="form-control">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Filtrar</button>
+    </form>
+    <hr>
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Puntaje</th>
+                <th>Industria</th>
+                <th>Habilidades</th>
+                <th>PDF</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ranking in rankings %}
+            <tr>
+                <td>{{ ranking.Nombre }}</td>
+                <td>{{ ranking.Puntaje }}</td>
+                <td>{{ ranking.Industria }}</td>
+                <td>{{ ranking.Habilidades }}</td>
+                <td><a href="/download/{{ ranking.PDF }}" class="btn btn-sm btn-success">Descargar</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/ranking" class="btn btn-secondary">Ver Ranking Completo</a>
+</body>
+</html>
