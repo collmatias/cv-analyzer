@@ -6,7 +6,13 @@ import pandas as pd
 from fpdf import FPDF
 
 # Configurar la API de OpenAI
-openai.api_key = "TU_API_KEY_AQUI"
+if not os.path.exists("chatgpt-api-key.txt"):
+    openai.api_key = "sk-..."
+    print("API key is missing! Please add your OpenAI API key to a file"
+else:
+    file = open("chatgpt-api-key.txt", "r")
+    openai.api_key = file.read()
+    file.close()
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
