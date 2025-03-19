@@ -59,8 +59,8 @@ Una vez instaladas las dependencias, puedes ejecutar la aplicación Flask con lo
   deactivate
   ```
 
-## 📄 Licencia
-Este proyecto está bajo la licencia MIT.
+## 📄 IMPORTANTE
+Para poder ejecutar consultas a ChatGPT debes agregar una API Key valida en el archivo chatgpt-api-key.txt
 
 ---
 ¡Listo! Ahora puedes trabajar con la aplicación Flask. 🚀
