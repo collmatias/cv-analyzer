@@ -1,0 +1,21 @@
+<!-- templates/error.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f8d7da; color: #721c24; padding: 20px; }
+        .error-container { max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 5px; background-color: #f2dede; }
+        h1 { font-size: 24px; }
+        p { font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Error</h1>
+        <p>{{ error_message }}</p>
+    </div>
+</body>
+</html>
