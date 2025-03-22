@@ -62,6 +62,19 @@ Una vez instaladas las dependencias, puedes ejecutar la aplicación Flask con lo
 ## 📄 IMPORTANTE
 Para poder ejecutar consultas a ChatGPT debes agregar una API Key valida en el archivo chatgpt-api-key.txt
 
+O tambien exportarla como variable de entorno:
+
+  ```bash
+  export OPENAI_API_KEY=sk-proj...
+  ```
+
+Tambien de debe exportar como variable de entorno una SECRET_KEY para el manejo de sesiones.
+
+  ```bash
+  export SECRET_KEY=random_secret_key
+  ```
+
+
 ---
 ¡Listo! Ahora puedes trabajar con la aplicación Flask. 🚀
 

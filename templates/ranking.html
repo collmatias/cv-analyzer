@@ -7,7 +7,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body class="container mt-5">
-    <h1 class="text-center">Ranking de CVs</h1>
+
+<!-- Navbar -->
+{% include 'navbar.html' %}
+<!-- Welcome Card -->
+{% include 'welcomecard.html' %}
+
+    <h1 class="text-center">Ranking de CVs {{ fecha }}</h1>
     <table class="table table-striped mt-4">
         <thead>
             <tr>
@@ -15,8 +21,6 @@
                 <th>Puntaje</th>
                 <th>Industria</th>
                 <th>Habilidades</th>
-                <th>Pros</th>
-                <th>Contras</th>
                 <th>PDF</th>
             </tr>
         </thead>
@@ -27,13 +31,16 @@
                 <td>{{ ranking.Puntaje }}</td>
                 <td>{{ ranking.Industria }}</td>
                 <td>{{ ranking.Habilidades}}</td>
-                <td>{{ ranking.Pros  }}</td>
-                <td>{{ ranking.Contras  }}</td>
-                <td><a href="/download/results/{{ ranking.PDF }}" class="btn btn-sm btn-success">Descargar</a></td>
+                <td><a href="/download/{{ ranking.PDF }}" class="btn btn-sm btn-success">Descargar</a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="/" class="btn btn-secondary">Volver</a>
+    <!-- Botón para descargar el reporte global -->
+    <div class="text-center mt-4">
+        <a href="/download/{{ report_filename }}" class="btn btn-primary">Descargar Reporte</a>
+    </div>
+
+    <a href="/" class="btn btn-secondary mt-3">Volver</a>
 </body>
 </html>
