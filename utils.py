@@ -86,15 +86,20 @@ def execute_prompt(prompt):
         )
     except Exception as e:
         print(f"Error con gpt-4o-mini: {e}. Probando con gpt-3.5-turbo.")
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "Eres un experto en análisis de CV. Devuelve solo JSON válido."},
-                {"role": "user", "content": prompt}
-            ]
-        )
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "Eres un experto en análisis de CV. Devuelve solo JSON válido."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+        except Exception as e:
+            return None, f"Error al ejecutar el prompt en OpenAI: {e}"
+        
     raw_response = response["choices"][0]["message"]["content"].strip()
     raw_response = re.sub(r'^```json\n?|```$', '', raw_response.strip())
+
     try:
         return json.loads(raw_response), None
     except json.JSONDecodeError:
